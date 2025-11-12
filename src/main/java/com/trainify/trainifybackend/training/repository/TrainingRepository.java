@@ -16,7 +16,4 @@ public interface TrainingRepository extends JpaRepository<Training, Long> {
 
     List<Training> findAllByUserAssigned_Id(Long userId); // Pobieranie wszystkich treningów danego użytkownika
 
-    List<TrainingExercise> findAllExerciseByUserAssigned_Id(Long userId); // Pobieranie wszystkich ćwiczeń danego użytkownika
-
-
 }

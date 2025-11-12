@@ -7,6 +7,7 @@ import com.trainify.trainifybackend.training.dto.TrainingExerciseDTO;
 import com.trainify.trainifybackend.training.dto.TrainingStatisticsDTO;
 import com.trainify.trainifybackend.training.model.Training;
 import com.trainify.trainifybackend.training.model.TrainingExercise;
+import com.trainify.trainifybackend.training.repository.TrainingExerciseRepository;
 import com.trainify.trainifybackend.training.repository.TrainingRepository;
 import com.trainify.trainifybackend.user.model.User;
 import com.trainify.trainifybackend.user.repository.UserRepository;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,7 @@ public class TrainingService {
 
     private final TrainingRepository trainingRepository;
     private final UserRepository userRepository;
+    private final TrainingExerciseRepository trainingExerciseRepository;
     private final UserService userService;
 
     @Transactional
@@ -40,7 +43,13 @@ public class TrainingService {
                 .build();
 
 
-        List<TrainingExercise> createExercise = createExerciseMethod(trainingDTO, training);
+        //Sprawdzam, czy lista ćwiczeń w dto istnieje i sprawdzam, czy lista nie jest pusta, jeżeli się zgadza tworze ćwiczenia
+        if(trainingDTO.exercises() != null && !trainingDTO.exercises().isEmpty()){
+            List<TrainingExercise> exercises = createExerciseMethod(trainingDTO, training);
+            training.setExercises(exercises);
+        }
+
+
         trainingRepository.save(training);
         List<TrainingExerciseDTO> getExercise = getExerciseMethod(training);
 
@@ -49,38 +58,36 @@ public class TrainingService {
                 user.getId(),
                 training.getDate(),
                 training.getCreatedAt(),
-                createExercise,
                 getExercise
         );
 
     }
 
     @Transactional
-    public TrainingDTO updateTraining(TrainingDTO trainingDTO,Long trainingId, Long userId) {
+    public TrainingDTO updateTraining(TrainingDTO trainingDTO, Long trainingId, Long userId) {
         Training existingTraining = trainingRepository.findTrainingByIdAndUserAssigned_Id(trainingId, userId)
                 .orElseThrow(() -> new TrainingForUserNotFoundException(
                         "Nie znaleziono treningu o podanym ID dla tego użytkownika"
                 ));
 
 
-        existingTraining.setDate(trainingDTO.date()); // Najpierw zmieniasz date w istniejącym obiekcie zanim zapiszesz go w repozytorium, to standardowa aktualizacja encji.
+        existingTraining.setDate(trainingDTO.date()); // Najpierw zmieniasz date w istniejącym obiekcie, zanim zapiszesz go w repozytorium, to standardowa aktualizacja encji.
 
 
         List<TrainingExercise> exercises = createExerciseMethod(trainingDTO, existingTraining);
-        existingTraining.setExercises(exercises); //Dzięki CascadeType.ALL i orphanRemoval = true, Hibernate sam zajmie się usunięciem starych ćwiczeń i dodaniem nowych.
+        existingTraining.setExercises(exercises); //Dzięki CascadeType.ALL i orphanRemoval = true Hibernate sam zajmie się usunięciem starych ćwiczeń i dodaniem nowych.
 
 
         trainingRepository.save(existingTraining);
 
-        List<TrainingExerciseDTO> exerciseDTOS = getExerciseMethod(existingTraining);
+        List<TrainingExerciseDTO> getExercise = getExerciseMethod(existingTraining);
 
         return new TrainingDTO(
                 existingTraining.getId(),
                 userId,
                 existingTraining.getDate(),
                 existingTraining.getCreatedAt(),
-                exercises,
-                exerciseDTOS
+                getExercise
 
         );
     }
@@ -104,16 +111,20 @@ public class TrainingService {
 
 
     public List<TrainingExerciseDTO> getExerciseMethod(Training training) {
-        return training.getExercises().stream()
-                .map(exercise -> new TrainingExerciseDTO(
-                        exercise.getId(),
-                        exercise.getExerciseCategory(),
-                        exercise.getNote(),
-                        exercise.getAmount(),
-                        exercise.getDuration(),
-                        exercise.getIntensityScore(),
-                        exercise.getIntensityScoreMessage()
-                ))
+        List<TrainingExercise> exercises = training.getExercises();
+        if (exercises == null) {
+            return Collections.emptyList();
+        }
+        return exercises.stream().map(
+                        exercise -> new TrainingExerciseDTO(
+                                exercise.getId(),
+                                exercise.getExerciseCategory(),
+                                exercise.getNote(),
+                                exercise.getAmount(),
+                                exercise.getDuration(),
+                                exercise.getIntensityScore(),
+                                exercise.getIntensityScoreMessage()
+                        ))
                 .collect(Collectors.toList());
     }
 
@@ -129,7 +140,7 @@ public class TrainingService {
 
 
     public TrainingStatisticsDTO getStatisticsForUserId(Long userId) {
-        List<TrainingExercise> trainings = trainingRepository.findAllExerciseByUserAssigned_Id(userId);
+        List<TrainingExercise> trainings = trainingExerciseRepository.findAllByTrainingAssignedUserAssignedId(userId);
 
         if (trainings.isEmpty()) {
             return new TrainingStatisticsDTO(0, 0, 0);
@@ -167,14 +178,12 @@ public class TrainingService {
                 training.getUserAssigned().getId(),
                 training.getDate(),
                 training.getCreatedAt(),
-                null,
-                null
+                getExerciseMethod(training)
         );
     }
 
 
     public void calculateTiS(Training training) {
         // do zrobienia
-        // zrobione
     }
 }

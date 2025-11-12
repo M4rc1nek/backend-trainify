@@ -1,7 +1,6 @@
 package com.trainify.trainifybackend.training.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.trainify.trainifybackend.training.model.TrainingExercise;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
@@ -18,9 +17,7 @@ public record TrainingDTO(
         @PastOrPresent LocalDate date,
         @JsonInclude(JsonInclude.Include.NON_NULL) LocalDateTime createdAt,
 
-
-        List<TrainingExercise> createExercise,
-        @NotNull List<TrainingExerciseDTO> exercises
+        List<TrainingExerciseDTO> exercises
 
 
 ) {
