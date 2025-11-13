@@ -7,7 +7,6 @@ import com.trainify.trainifybackend.training.dto.TrainingExerciseDTO;
 import com.trainify.trainifybackend.training.dto.TrainingStatisticsDTO;
 import com.trainify.trainifybackend.training.model.Training;
 import com.trainify.trainifybackend.training.model.TrainingExercise;
-import com.trainify.trainifybackend.training.repository.TrainingExerciseRepository;
 import com.trainify.trainifybackend.training.repository.TrainingRepository;
 import com.trainify.trainifybackend.user.model.User;
 import com.trainify.trainifybackend.user.repository.UserRepository;
@@ -15,6 +14,7 @@ import com.trainify.trainifybackend.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -28,7 +28,6 @@ public class TrainingService {
 
     private final TrainingRepository trainingRepository;
     private final UserRepository userRepository;
-    private final TrainingExerciseRepository trainingExerciseRepository;
     private final UserService userService;
 
     @Transactional
@@ -44,20 +43,20 @@ public class TrainingService {
 
 
         //Sprawdzam, czy lista ćwiczeń w dto istnieje i sprawdzam, czy lista nie jest pusta, jeżeli się zgadza tworze ćwiczenia
-        if (trainingDTO.exercises() != null && !trainingDTO.exercises().isEmpty()) {
-            List<TrainingExercise> exercises = createExerciseMethod(trainingDTO, training);
+        if(!CollectionUtils.isEmpty(trainingDTO.exercises())){
+            List<TrainingExercise> exercises = createExercise(trainingDTO, training);
             training.setExercises(exercises);
             calculateTiS(training);
         }
 
 
-
         trainingRepository.save(training);
-        List<TrainingExerciseDTO> getExercise = getExerciseMethod(training);
+        List<TrainingExerciseDTO> getExercise = getExercise(training);
 
         return new TrainingDTO(
                 training.getId(),
                 user.getId(),
+                training.getNote(),
                 training.getDate(),
                 training.getCreatedAt(),
                 getExercise
@@ -76,19 +75,28 @@ public class TrainingService {
         existingTraining.setDate(trainingDTO.date()); // Najpierw zmieniasz date w istniejącym obiekcie, zanim zapiszesz go w repozytorium, to standardowa aktualizacja encji.
 
 
-        List<TrainingExercise> exercises = createExerciseMethod(trainingDTO, existingTraining);
-        existingTraining.setExercises(exercises); //Dzięki CascadeType.ALL i orphanRemoval = true Hibernate sam zajmie się usunięciem starych ćwiczeń i dodaniem nowych.
-        calculateTiS(existingTraining);
+        //Zastępuje stare ćwiczenia nowymi, tak żeby Hibernate poprawnie usuwał te usunięte.
+        List<TrainingExercise> newExercises = createExercise(trainingDTO, existingTraining);
+        if(existingTraining.getExercises() == null){
+            existingTraining.setExercises(newExercises);
+        }else{
+            existingTraining.getExercises().clear();
+            existingTraining.getExercises().addAll(newExercises);
+        }
 
+
+
+        calculateTiS(existingTraining);
 
 
         trainingRepository.save(existingTraining);
 
-        List<TrainingExerciseDTO> getExercise = getExerciseMethod(existingTraining);
+        List<TrainingExerciseDTO> getExercise = getExercise(existingTraining);
 
         return new TrainingDTO(
                 existingTraining.getId(),
                 userId,
+                existingTraining.getNote(),
                 existingTraining.getDate(),
                 existingTraining.getCreatedAt(),
                 getExercise
@@ -96,21 +104,21 @@ public class TrainingService {
         );
     }
 
-    public List<TrainingExercise> createExerciseMethod(TrainingDTO trainingDTO, Training training) {
+    public List<TrainingExercise> createExercise(TrainingDTO trainingDTO, Training training) {
         return trainingDTO.exercises().stream()
                 .map(dto -> TrainingExercise.builder()
                         .id(dto.id())
                         .exerciseCategory(dto.exerciseCategory())
-                        .note(dto.note())
                         .amount(dto.amount())
                         .duration(dto.duration())
                         .trainingAssigned(training)
                         .build()
-                ).toList();
+                )
+                .collect(Collectors.toList());
     }
 
 
-    public List<TrainingExerciseDTO> getExerciseMethod(Training training) {
+    public List<TrainingExerciseDTO> getExercise(Training training) {
         List<TrainingExercise> exercises = training.getExercises();
         if (exercises == null) {
             return Collections.emptyList();
@@ -119,7 +127,6 @@ public class TrainingService {
                         exercise -> new TrainingExerciseDTO(
                                 exercise.getId(),
                                 exercise.getExerciseCategory(),
-                                exercise.getNote(),
                                 exercise.getAmount(),
                                 exercise.getDuration()
                         ))
@@ -146,13 +153,13 @@ public class TrainingService {
 
         // flatMap bierze wszystkie ćwiczenia ze wszystkich treningów i łączy je w jedną dużą listę, żeby łatwo je podsumować
         // (inaczej spłaszcza strumienie i lączy w jeden duży strumień)
-         double averageDuration = trainings.stream()
-                .flatMap(t->t.getExercises().stream())
+        double averageDuration = trainings.stream()
+                .flatMap(t -> t.getExercises().stream())
                 .mapToDouble(TrainingExercise::getDuration)
                 .average()
                 .orElse(0.0);
         double averageAmount = trainings.stream()
-                .flatMap(t->t.getExercises().stream())
+                .flatMap(t -> t.getExercises().stream())
                 .mapToDouble(TrainingExercise::getAmount)
                 .average()
                 .orElse(0.0);
@@ -178,9 +185,10 @@ public class TrainingService {
         return new TrainingDTO(
                 training.getId(),
                 training.getUserAssigned().getId(),
+                training.getNote(),
                 training.getDate(),
                 training.getCreatedAt(),
-                getExerciseMethod(training)
+                getExercise(training)
         );
     }
 
@@ -188,7 +196,7 @@ public class TrainingService {
     public void calculateTiS(Training training) {
 
 
-        if(training.getExercises() == null || training.getExercises().isEmpty()){
+        if (training.getExercises() == null || training.getExercises().isEmpty()) {
             training.setIntensityScore(0);
             training.setIntensityScoreMessage("Brak ćwiczeń w treningu");
             return;
@@ -206,16 +214,25 @@ public class TrainingService {
         // Math.min(..., 100) = maksymalnie 100, Math.max(0, ...) = minimalnie 0
         // Najpierw ograniczam górną granicę, potem dolną, wynik zawsze w przedziale 0–100
 
-        double TiS = Math.max(0, Math.min(totalDuration + (totalAmount * 2), 100));
+        double TiS = Math.min(Math.sqrt((double) totalDuration / 1500 * 50) + Math.sqrt((double) totalAmount / 3000 * 50), 100);
         String feedback;
 
         if (TiS < 40) feedback = "Lekki Trening";
-        else if (TiS < 70) feedback = "Dobry Trening";
-        else feedback = "Bardzo dobry Trening";
+        else if (TiS < 70) feedback = "Dobry trening";
+        else feedback = "Bardzo dobry trening";
 
 
         training.setIntensityScore(TiS);
         training.setIntensityScoreMessage(feedback);
 
+
+
+        /*
+            Naprawic algorytm TiS, naprawic notatke (w bazie caly czas jest jako null, na frontendzie sie nie pokazuje)
+            Na frontendzie dodac:  Wskaźnik intensywności treningu Wzór: nowy wzor, Wzór: nowy wzor + usunac "Przykład"
+            Zmienic uklad paneli, zmienic kolory
+
+
+         */
     }
 }

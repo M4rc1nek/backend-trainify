@@ -8,8 +8,6 @@ public record TrainingExerciseDTO(
 
         ExerciseCategory exerciseCategory,
 
-        String note,
-
         int amount,
         int duration
 

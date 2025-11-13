@@ -20,7 +20,6 @@ public class TrainingExercise {
     private Long id;
 
     private ExerciseCategory exerciseCategory; // kategoria ćwiczenia
-    private String note; // opcjonalna notatka
 
     private int amount; // liczba powtórzeń
 

@@ -20,29 +20,29 @@ public class TrainingController {
 
 
     @PostMapping("/training")
-    public ResponseEntity<TrainingDTO> addTrainingEndpoint(@RequestBody @Valid TrainingDTO trainingDTO) {
+    public ResponseEntity<TrainingDTO> addTraining(@RequestBody @Valid TrainingDTO trainingDTO) {
         return ResponseEntity.ok(trainingService.addTraining(trainingDTO));
     }
 
 
     @DeleteMapping("/training/{trainingId}/{userId}")
-    public ResponseEntity<Void> deleteTrainingEndpoint(@PathVariable Long trainingId, @PathVariable Long userId) {
+    public ResponseEntity<Void> deleteTraining(@PathVariable Long trainingId, @PathVariable Long userId) {
         trainingService.deleteTraining(trainingId, userId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/training/{trainingId}/{userId}")
-    public ResponseEntity<TrainingDTO> updateTrainingEndpoint(@RequestBody @Valid TrainingDTO trainingDTO, @PathVariable Long trainingId, @PathVariable Long userId) {
+    public ResponseEntity<TrainingDTO> updateTraining(@RequestBody @Valid TrainingDTO trainingDTO, @PathVariable Long trainingId, @PathVariable Long userId) {
         return ResponseEntity.ok(trainingService.updateTraining(trainingDTO, trainingId, userId));
     }
 
     @GetMapping("/training/{userId}")
-    public ResponseEntity<TrainingStatisticsDTO> getStatisticsForUserIdEndpoint(@PathVariable Long userId) {
+    public ResponseEntity<TrainingStatisticsDTO> getStatisticsForUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(trainingService.getStatisticsForUserId(userId));
     }
 
     @GetMapping("/training/history")
-    public ResponseEntity<List<TrainingDTO>> getTrainingHistoryEndpoint() {
+    public ResponseEntity<List<TrainingDTO>> getTrainingHistory() {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(trainingService.getTrainingsForUserByEmail(userEmail));
     }

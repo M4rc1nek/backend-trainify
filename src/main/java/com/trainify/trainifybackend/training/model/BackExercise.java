@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum BackExercise {
     PODCIAGANIE_NACHWYTEM("Podciąganie nachwytem"),
     PODCIAGANIE_PODCHWYTEM("Podciąganie podchwytem"),
-    PODCIAGANIE_NEUTRALNYM_CHWYtem("Podciąganie neutralnym chwytem"),
+    PODCIAGANIE_NEUTRALNYM_CHWYTEM("Podciąganie neutralnym chwytem"),
     PODCIAGANIE_SZEROKIM_NACHWYTEM("Podciąganie szerokim nachwytem"),
     PODCIAGANIE_WASKIM_NACHWYTEM("Podciąganie wąskim nachwytem"),
     PODCIAGANIE_LUKOWE("Podciąganie łukowe"),

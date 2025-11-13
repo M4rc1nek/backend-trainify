@@ -18,12 +18,12 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<UserRegisterLoginDTO> registerUserEndpoint(@RequestBody @Valid UserRegisterLoginDTO userRegisterLoginDTO) {
+    public ResponseEntity<UserRegisterLoginDTO> registerUser(@RequestBody @Valid UserRegisterLoginDTO userRegisterLoginDTO) {
         return ResponseEntity.ok(userService.registerUser(userRegisterLoginDTO));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserRegisterLoginDTO> loginUserEndpoint(@RequestBody @Valid UserRegisterLoginDTO userLogin) {
+    public ResponseEntity<UserRegisterLoginDTO> loginUser(@RequestBody @Valid UserRegisterLoginDTO userLogin) {
         return ResponseEntity.ok(userService.loginUser(userLogin.email(), userLogin.password()));
     }
 }

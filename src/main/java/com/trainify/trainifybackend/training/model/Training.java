@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "trainings")
+@Table(name = "training")
 @Getter
 @Setter
 @Builder
@@ -29,6 +29,8 @@ public class Training {
 
     private double intensityScore; // Wynik intensywnosci treningu 0 - 100
     private String intensityScoreMessage; // Komunikat jak intensywny trening był
+
+    String note;
 
 
     @ManyToOne
