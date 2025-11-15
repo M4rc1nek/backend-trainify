@@ -23,6 +23,6 @@ public enum BackExercise {
     private final String nazwa;
 
     BackExercise(String nazwa) {
-        this.nazwa = nazwa;
+        this.nazwa= nazwa;
     }
 }

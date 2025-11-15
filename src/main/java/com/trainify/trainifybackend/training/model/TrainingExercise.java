@@ -19,11 +19,18 @@ public class TrainingExercise {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private ExerciseCategory exerciseCategory; // kategoria ćwiczenia
+    @Enumerated(EnumType.ORDINAL)
+    private ExerciseCategory exerciseCategory; // Kategoria ćwiczenia (np. Ramiona)
+    private String exerciseName;  // DIPY_NA_PORECZACH
+    private String exerciseDisplayName; // Dipy na poręczach
+
 
     private int amount; // liczba powtórzeń
 
     private int duration; // czas w minutach cwiczenia
+
+
+
 
 
     @ManyToOne

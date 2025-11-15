@@ -20,9 +20,11 @@ public enum LegExercise {
     WALL_SIT("Wall Sit"),
     SKOK_W_DAL_Z_MIEJSCA("Skok w dal z miejsca");
 
+
     private final String nazwa;
 
     LegExercise(String nazwa) {
-        this.nazwa = nazwa;
+        this.nazwa= nazwa;
     }
+
 }

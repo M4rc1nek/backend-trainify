@@ -7,6 +7,10 @@ public record TrainingExerciseDTO(
         Long id,
 
         ExerciseCategory exerciseCategory,
+        String exerciseName,
+        String exerciseDisplayName,
+
+
 
         int amount,
         int duration

@@ -20,11 +20,11 @@ public enum ChestExercise {
     POMPKI_SZEROKIE_KOLKA("Pompki na szerokich kółkach"),
     DIPY_IZOMETRYCZNE("Dipy izometryczne");  // średnik po ostatniej wartości
 
-    private final String nazwa;  // pole do przechowywania czytelnej nazwy
 
-    // prywatny konstruktor enum
+    private final String nazwa;
+
     ChestExercise(String nazwa) {
-        this.nazwa = nazwa;
+        this.nazwa= nazwa;
     }
 
 }

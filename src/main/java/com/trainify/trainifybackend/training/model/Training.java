@@ -30,6 +30,7 @@ public class Training {
     private double intensityScore; // Wynik intensywnosci treningu 0 - 100
     private String intensityScoreMessage; // Komunikat jak intensywny trening był
 
+
     String note;
 
 

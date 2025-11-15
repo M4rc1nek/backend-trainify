@@ -5,8 +5,7 @@ import com.trainify.trainifybackend.exception.UserNotFoundException;
 import com.trainify.trainifybackend.training.dto.TrainingDTO;
 import com.trainify.trainifybackend.training.dto.TrainingExerciseDTO;
 import com.trainify.trainifybackend.training.dto.TrainingStatisticsDTO;
-import com.trainify.trainifybackend.training.model.Training;
-import com.trainify.trainifybackend.training.model.TrainingExercise;
+import com.trainify.trainifybackend.training.model.*;
 import com.trainify.trainifybackend.training.repository.TrainingRepository;
 import com.trainify.trainifybackend.user.model.User;
 import com.trainify.trainifybackend.user.repository.UserRepository;
@@ -110,16 +109,41 @@ public class TrainingService {
 
     public List<TrainingExercise> createExercise(TrainingDTO trainingDTO, Training training) {
         return trainingDTO.exercises().stream()
-                .map(dto -> TrainingExercise.builder()
-                        .id(dto.id())
-                        .exerciseCategory(dto.exerciseCategory())
-                        .amount(dto.amount())
-                        .duration(dto.duration())
-                        .trainingAssigned(training)
-                        .build()
-                )
+                .map(dto -> {
+
+                    // Pobieramy nazwę ćwiczenia i jego "przyjazną" nazwę do wyświetlania
+                    String name = dto.exerciseName(); // np. "DIPY_NA_PORECZACH" – nazwa w enum
+                    String displayName = dto.exerciseDisplayName(); //  np. "Dipy na poręczach" – do pokazania użytkownikowi
+
+                    /* Jeśli displayName jest puste, używamy enumów, aby dopasować techniczną nazwę do czytelnej nazwy
+                    valueOf(name) zamienia String w odpowiadającą stałą enumu (np. "POMPKI_KLASYCZNE" → ChestExercise.POMPKI_KLASYCZNE)*/
+                    if (displayName == null && name != null) {
+                            switch (dto.exerciseCategory()) {
+                                case Klata -> displayName = ChestExercise.valueOf(name).getNazwa();
+                                // valueOf(name) – znajdź element enum ChestExercise o dokładnie tej nazwie (np. "POMPKI_KLASYCZNE")
+                                // getNazwa() – pobierz "czytelną" nazwę ćwiczenia np. "Pompki klasyczne"
+                                case Plecy -> displayName = BackExercise.valueOf(name).getNazwa();
+                                case Barki -> displayName = ShoulderExercise.valueOf(name).getNazwa();
+                                case Ramiona -> displayName = ArmExercise.valueOf(name).getNazwa();
+                                case Brzuch -> displayName = AbsExercise.valueOf(name).getNazwa();
+                                case Nogi -> displayName = LegExercise.valueOf(name).getNazwa();
+                        }
+                    }
+
+                    return TrainingExercise.builder()
+                            .id(dto.id())
+                            .exerciseCategory(dto.exerciseCategory())
+                            .exerciseName(name)
+                            .exerciseDisplayName(displayName)
+                            .amount(dto.amount())
+                            .duration(dto.duration())
+                            .trainingAssigned(training)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
+
+
 
 
     public List<TrainingExerciseDTO> getExercise(Training training) {
@@ -131,6 +155,8 @@ public class TrainingService {
                         exercise -> new TrainingExerciseDTO(
                                 exercise.getId(),
                                 exercise.getExerciseCategory(),
+                                exercise.getExerciseName(),
+                                exercise.getExerciseDisplayName(),
                                 exercise.getAmount(),
                                 exercise.getDuration()
                         ))
@@ -223,14 +249,13 @@ public class TrainingService {
                 .mapToInt(TrainingExercise::getAmount)
                 .sum();
 
-        // Math.min(..., 100) = maksymalnie 100, Math.max(0, ...) = minimalnie 0
-        // Najpierw ograniczam górną granicę, potem dolną, wynik zawsze w przedziale 0–100
+      /*  Math.min(..., 100) = maksymalnie 100, Math.max(0, ...) = minimalnie 0
+          Najpierw ograniczam górną granicę, potem dolną, wynik zawsze w przedziale 0–100
 
-
-        // Normalizacja czasu i ilości powtórzeń do zakresu 0–1
-        // 80 minut i 500 powtórzeń to maksymalne wartości przy pełnym wyniku
+         Normalizacja czasu i ilości powtórzeń do zakresu 0–1
+         80 minut i 500 powtórzeń to maksymalne wartości przy pełnym wyniku*/
         double calculateDuration = Math.min(totalDuration / 60.0, 1.0);
-        double calculateAmount = Math.min(totalAmount / 400.0, 1.0);
+        double calculateAmount = Math.min(totalAmount / 300.0, 1.0);
 
         double TiS = (calculateDuration * 0.5 + calculateAmount * 0.5) * 100;
         String feedback;
