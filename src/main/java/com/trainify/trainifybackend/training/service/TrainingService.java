@@ -290,6 +290,50 @@ public class TrainingService {
         );
     }
 
+    public TrainingDTO createTrainingFromTemplate(Long templateId, Long userId) {
+        TrainingTemplate template = templateRepository.findById(templateId)
+                .filter(t -> t.getUser().getId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono szablonu treningu dla tego użytkownika"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Nie znaleziono użytkownika z id " + userId));
+
+        Training training = Training.builder()
+                .date(LocalDate.now())
+                .createdAt(LocalDateTime.now())
+                .note(template.getName())
+                .userAssigned(user)
+                .build();
+
+        List<TrainingExercise> exercises = template.getExercises().stream()
+                .map(te -> TrainingExercise.builder()
+                        .exerciseCategory(te.getExerciseCategory())
+                        .exerciseName(te.getExerciseName())
+                        .exerciseDisplayName(te.getExerciseDisplayName())
+                        .amount(te.getAmount())
+                        .duration(te.getDuration())
+                        .trainingAssigned(training)
+                        .build())
+                .collect(Collectors.toList());
+
+        training.setExercises(exercises);
+        calculateTiS(training);
+        trainingRepository.save(training);
+
+        List<TrainingExerciseDTO> exerciseDTOs = getExercise(training);
+
+        return new TrainingDTO(
+                training.getId(),
+                userId,
+                training.getNote(),
+                training.getIntensityScore(),
+                training.getIntensityScoreMessage(),
+                training.getDate(),
+                training.getCreatedAt(),
+                exerciseDTOs
+        );
+    }
+
 
     public void calculateTiS(Training training) {
 
