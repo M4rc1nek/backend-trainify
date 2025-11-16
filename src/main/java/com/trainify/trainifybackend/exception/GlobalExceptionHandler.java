@@ -1,14 +1,12 @@
 package com.trainify.trainifybackend.exception;
 
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-@Slf4j
 @RestControllerAdvice // -> Działa globalnie na wszystkie kontrolery, zwraca JSON
 public class GlobalExceptionHandler {
 
@@ -24,7 +22,7 @@ public class GlobalExceptionHandler {
     Jeśli dasz true, wynik zawierałby też informacje o kliencie (np. IP, host)
      */
 
-    @ExceptionHandler({EmailAlreadyExistsException.class, UsernameAlreadyExistsException.class})
+    @ExceptionHandler({EmailAlreadyExistsException.class, UsernameAlreadyExistsException.class, DailyWellnessAlreadySubmittedException.class})
     public ResponseEntity<ErrorResponseDTO> handleConflictExceptions(RuntimeException exception, WebRequest webRequest) {
         ErrorResponseDTO body = new ErrorResponseDTO(
                 HttpStatus.CONFLICT.value(),
@@ -36,7 +34,7 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler({TrainingForUserNotFoundException.class, UserNotFoundException.class})
+    @ExceptionHandler({TrainingForUserNotFoundException.class, UserNotFoundException.class, DailyWellnessForUserNotFoundException.class})
     public ResponseEntity<ErrorResponseDTO> handleNotFoundExceptions(RuntimeException exception, WebRequest webRequest) {
         ErrorResponseDTO body = new ErrorResponseDTO(
                 HttpStatus.NOT_FOUND.value(),

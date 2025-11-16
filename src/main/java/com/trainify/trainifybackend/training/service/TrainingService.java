@@ -6,7 +6,9 @@ import com.trainify.trainifybackend.training.dto.TrainingDTO;
 import com.trainify.trainifybackend.training.dto.TrainingExerciseDTO;
 import com.trainify.trainifybackend.training.dto.TrainingPlanDTO;
 import com.trainify.trainifybackend.training.dto.TrainingStatisticsDTO;
-import com.trainify.trainifybackend.training.model.*;
+import com.trainify.trainifybackend.training.model.Training;
+import com.trainify.trainifybackend.training.model.TrainingExercise;
+import com.trainify.trainifybackend.training.model.exerciseModel.*;
 import com.trainify.trainifybackend.training.repository.TrainingRepository;
 import com.trainify.trainifybackend.user.model.User;
 import com.trainify.trainifybackend.user.repository.UserRepository;
@@ -327,8 +329,6 @@ public class TrainingService {
         training.setIntensityScore(TiS);
         training.setIntensityScoreMessage(feedback);
 
-
-
-
     }
+
 }

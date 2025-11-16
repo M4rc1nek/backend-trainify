@@ -1,5 +1,6 @@
 package com.trainify.trainifybackend.user.model;
 
+import com.trainify.trainifybackend.dailywellness.model.DailyWellness;
 import com.trainify.trainifybackend.training.model.Training;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,4 +30,7 @@ public class User {
 
     @OneToMany(mappedBy = "userAssigned", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Training> trainings;
+
+    @OneToMany(mappedBy = "userAssigned")
+    private List<DailyWellness> dailyWellnessHistory;
 }

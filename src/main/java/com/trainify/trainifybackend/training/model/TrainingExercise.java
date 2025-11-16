@@ -1,6 +1,7 @@
 package com.trainify.trainifybackend.training.model;
 
 
+import com.trainify.trainifybackend.training.model.exerciseModel.ExerciseCategory;
 import jakarta.persistence.*;
 import lombok.*;
 

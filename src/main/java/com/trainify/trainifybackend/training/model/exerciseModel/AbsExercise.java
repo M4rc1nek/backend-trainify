@@ -1,4 +1,4 @@
-package com.trainify.trainifybackend.training.model;
+package com.trainify.trainifybackend.training.model.exerciseModel;
 
 import lombok.Getter;
 

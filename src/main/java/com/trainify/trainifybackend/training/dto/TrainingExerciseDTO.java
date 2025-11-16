@@ -1,6 +1,6 @@
 package com.trainify.trainifybackend.training.dto;
 
-import com.trainify.trainifybackend.training.model.ExerciseCategory;
+import com.trainify.trainifybackend.training.model.exerciseModel.ExerciseCategory;
 
 public record TrainingExerciseDTO(
 
