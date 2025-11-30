@@ -1,6 +1,7 @@
 package com.trainify.trainifybackend.healthcore.controller;
 
 
+import com.trainify.trainifybackend.healthcore.dto.MacronutrientsDTO;
 import com.trainify.trainifybackend.healthcore.dto.UserHealthMetricsDTO;
 import com.trainify.trainifybackend.healthcore.model.UserHealthMetrics;
 import com.trainify.trainifybackend.healthcore.service.HealthCalculatorService;
@@ -35,6 +36,12 @@ public class UserHealthMetricsController {
         return ResponseEntity.ok(healthCalculatorService.mapToDTO(metrics));
     }
 
+    @PostMapping("/addMacro/{userId}")
+    public ResponseEntity<UserHealthMetricsDTO> addMacro(@RequestBody @Valid UserHealthMetricsDTO dto, @PathVariable Long userId){
+        UserHealthMetrics metrics = healthCalculatorService.buildMacronutrients(dto, userId);
+        return ResponseEntity.ok(healthCalculatorService.mapToDTO(metrics));
+    }
+
     @GetMapping("/getBMI/{userId}")
     public ResponseEntity<Double> getBMI(@PathVariable Long userId) {
         return ResponseEntity.ok(healthCalculatorService.getBMI(userId));
@@ -52,6 +59,9 @@ public class UserHealthMetricsController {
         return ResponseEntity.ok(healthCalculatorService.getTDEE(userId));
     }
 
-
+    @GetMapping("/getMacro/{userId}")
+    public ResponseEntity<MacronutrientsDTO> getMacronutrients(@PathVariable Long userId){
+        return ResponseEntity.ok(healthCalculatorService.getMacronutrients(userId));
+    }
 }
 

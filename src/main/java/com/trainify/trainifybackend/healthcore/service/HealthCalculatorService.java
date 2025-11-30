@@ -4,11 +4,9 @@ import com.trainify.trainifybackend.exception.InvalidEnumValueException;
 import com.trainify.trainifybackend.exception.MissingRequirementException;
 import com.trainify.trainifybackend.exception.UserHealthMetricsNotFoundException;
 import com.trainify.trainifybackend.exception.UserNotFoundException;
+import com.trainify.trainifybackend.healthcore.dto.MacronutrientsDTO;
 import com.trainify.trainifybackend.healthcore.dto.UserHealthMetricsDTO;
-import com.trainify.trainifybackend.healthcore.model.ActivityLevel;
-import com.trainify.trainifybackend.healthcore.model.BmiFeedback;
-import com.trainify.trainifybackend.healthcore.model.GenderType;
-import com.trainify.trainifybackend.healthcore.model.UserHealthMetrics;
+import com.trainify.trainifybackend.healthcore.model.*;
 import com.trainify.trainifybackend.healthcore.repository.HealthCoreRepository;
 import com.trainify.trainifybackend.user.model.User;
 import com.trainify.trainifybackend.user.repository.UserRepository;
@@ -86,12 +84,32 @@ public class HealthCalculatorService {
         return userHealthMetrics;
     }
 
+    public UserHealthMetrics buildMacronutrients(UserHealthMetricsDTO dto, Long userId) {
+        UserHealthMetrics userHealthMetrics = buildMetrics(userId);
+
+
+        if (userHealthMetrics.getTDEE() == 0) {
+            calculateTDEE(userHealthMetrics);
+        }
+        userHealthMetrics.setGoalType(dto.goalType());
+        if (userHealthMetrics.getGoalType() == null) {
+            throw new MissingRequirementException("Cel nie może być pusty");
+        }
+
+
+        calculateMacronutrients(userHealthMetrics);
+        healthCoreRepository.save(userHealthMetrics);
+
+        return userHealthMetrics;
+    }
+
 
     public UserHealthMetricsDTO mapToDTO(UserHealthMetrics metrics) {
         return new UserHealthMetricsDTO(
                 metrics.getId(),
                 metrics.getActivityLevel(),
                 metrics.getGenderType(),
+                metrics.getGoalType(),
                 metrics.getAge(),
                 metrics.getHeight(),
                 metrics.getWeight(),
@@ -118,6 +136,11 @@ public class HealthCalculatorService {
 
     public double getTDEE(Long userId) {
         return getMetricsOrThrow(userId).getTDEE();
+    }
+
+    public MacronutrientsDTO getMacronutrients(Long userId) {
+       UserHealthMetrics metrics =  getMetricsOrThrow(userId);
+        return new MacronutrientsDTO(metrics.getProtein(), metrics.getFats(), metrics.getCarbohydrates());
     }
 
 
@@ -173,6 +196,44 @@ public class HealthCalculatorService {
 
         userHealthMetrics.setTDEE(TDEE);
 
+
+    }
+
+    //macronutrients -> makrosładniki
+    private void calculateMacronutrients(UserHealthMetrics userHealthMetrics) {
+        GoalType goalType = userHealthMetrics.getGoalType();
+
+
+        double proteinCalories, fatCalories, carbCalories;
+        calculateTDEE(userHealthMetrics);
+        //zapotrzebowanie kaloryczne
+        double caloricRequirement = userHealthMetrics.getTDEE();
+        switch (goalType) {
+            case Redukcja -> {
+                proteinCalories = caloricRequirement * 0.3;
+                fatCalories = caloricRequirement * 0.25;
+                carbCalories = caloricRequirement * 0.45;
+            }
+            case Utrzymanie -> {
+                proteinCalories = caloricRequirement * 0.3;
+                fatCalories = caloricRequirement * 0.2;
+                carbCalories = caloricRequirement * 0.5;
+            }
+            case Masa -> {
+                proteinCalories = caloricRequirement * 0.25;
+                fatCalories = caloricRequirement * 0.25;
+                carbCalories = caloricRequirement * 0.5;
+            }
+            default -> throw new InvalidEnumValueException("Nie ma takiego celu " + goalType);
+        }
+        double proteinInGrams = proteinCalories / 4;
+        double carbohydratesInGrams = carbCalories / 4;
+        double fatsInGrams = fatCalories / 9;
+
+
+        userHealthMetrics.setProtein(proteinInGrams);
+        userHealthMetrics.setFats(fatsInGrams);
+        userHealthMetrics.setCarbohydrates(carbohydratesInGrams);
 
     }
 

@@ -3,6 +3,7 @@ package com.trainify.trainifybackend.healthcore.dto;
 import com.trainify.trainifybackend.healthcore.model.ActivityLevel;
 import com.trainify.trainifybackend.healthcore.model.BmiFeedback;
 import com.trainify.trainifybackend.healthcore.model.GenderType;
+import com.trainify.trainifybackend.healthcore.model.GoalType;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 
@@ -13,6 +14,8 @@ public record UserHealthMetricsDTO(
 
         ActivityLevel activityLevel,
         GenderType genderType,
+        GoalType goalType,
+
 
         int age,
         @DecimalMin("1.0") @DecimalMax("250.0") double height, // cm

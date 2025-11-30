@@ -21,7 +21,8 @@ public class UserHealthMetrics {
     private double height; // metry
     private double weight;
 
-    private  GenderType genderType;
+    private GenderType genderType;
+    private GoalType goalType;
 
     @Enumerated(EnumType.STRING)
     private ActivityLevel activityLevel;
@@ -29,6 +30,13 @@ public class UserHealthMetrics {
     private double BMI;
     private double BMR;
     private double TDEE;
+
+
+    private double protein;
+    private double carbohydrates;
+    private double fats;
+
+    private double macro;
 
     private BmiFeedback bmiFeedback;
 
