@@ -277,7 +277,7 @@ public class TrainingService {
 
         return trainings.stream()
                 .map(this::mapToTrainingDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private TrainingDTO mapToTrainingDTO(Training training) {

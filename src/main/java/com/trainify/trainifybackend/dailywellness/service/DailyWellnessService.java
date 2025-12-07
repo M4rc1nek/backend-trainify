@@ -1,6 +1,5 @@
 package com.trainify.trainifybackend.dailywellness.service;
 
-
 import com.trainify.trainifybackend.dailywellness.dto.DailyWellnessDTO;
 import com.trainify.trainifybackend.dailywellness.model.DailyWellness;
 import com.trainify.trainifybackend.dailywellness.model.ReadinessLevel;
@@ -29,17 +28,14 @@ public class DailyWellnessService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("Nie znaleziono użytkownika"));
 
-
         dailyWellnessRepository.findByUserAssigned_IdAndDate(user.getId(), LocalDate.now())
                 .ifPresent(w -> {
                     throw new DailyWellnessAlreadySubmittedException("Dzisiaj formularz został już wypełniony");
                 });
 
-
         int readinessScore = calculateReadiness(dto);
         ReadinessLevel readinessLevel = determineReadinessLevel(readinessScore);
         String recommendation = generateRecommendation(readinessLevel);
-
 
         DailyWellness dailyWellness = DailyWellness.builder()
                 .date(LocalDate.now()) //LocalDate.now() zamiast dto.date() -> dlatego aby data była pobierana z teraz, żeby użytkownik nie mógł wpisać np. date jutrzejszą
@@ -93,13 +89,12 @@ public class DailyWellnessService {
 
     @Transactional
     public DailyWellnessDTO updateDailyWellness(DailyWellnessDTO dto, Long userId, LocalDate date) {
-       DailyWellness existing = dailyWellnessRepository.findByUserAssigned_IdAndDate(userId, date)
+        DailyWellness existing = dailyWellnessRepository.findByUserAssigned_IdAndDate(userId, date)
                 .orElseThrow(() -> new DailyWellnessForUserNotFoundException("Nie znaleziono DailyWellness dla użytkownika o ID: " + userId + " w dniu " + date));
 
         int readinessScore = calculateReadiness(dto);
         ReadinessLevel readinessLevel = determineReadinessLevel(readinessScore);
         String recommendation = generateRecommendation(readinessLevel);
-
 
         DailyWellness updatedDailyWellness = DailyWellness.builder()
                 .id(existing.getId())
@@ -115,9 +110,7 @@ public class DailyWellnessService {
                 .recommendation(recommendation)
                 .build();
 
-
-        DailyWellness saved =  dailyWellnessRepository.save(updatedDailyWellness);
-
+        DailyWellness saved = dailyWellnessRepository.save(updatedDailyWellness);
 
         return new DailyWellnessDTO(
                 saved.getId(),
@@ -133,13 +126,11 @@ public class DailyWellnessService {
         );
     }
 
-
     public void deleteDailyWellness(Long userId, LocalDate date) {
         DailyWellness dailyWellness = dailyWellnessRepository.findByUserAssigned_IdAndDate(userId, date)
                 .orElseThrow(() -> new DailyWellnessForUserNotFoundException("Nie znaleziono DailyWellness dla użytkownika o ID: " + userId + " w dniu " + date));
         dailyWellnessRepository.delete(dailyWellness);
     }
-
 
     private int calculateReadiness(DailyWellnessDTO dto) {
 
@@ -154,7 +145,6 @@ public class DailyWellnessService {
         double musclePainPoints = ((10 - dto.musclePain()) / 10.0) * 25;
         double moodPoints = (dto.mood() / 10.0) * 15;
         double motivationPoints = (dto.motivation() / 10.0) * 10;
-
 
         return (int) Math.round(sleepPoints + energyPoints + musclePainPoints + moodPoints + motivationPoints);
 

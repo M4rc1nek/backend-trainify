@@ -8,9 +8,11 @@ import com.trainify.trainifybackend.training.service.TrainingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -48,7 +50,7 @@ public class TrainingController {
     }
 
     @GetMapping("/training/history")
-    public ResponseEntity<List<TrainingDTO>> getTrainingHistory() {
+    public ResponseEntity<List<TrainingDTO>> getTrainingHistory(@AuthenticationPrincipal Principal principal) {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(trainingService.getTrainingsForUserByEmail(userEmail));
     }

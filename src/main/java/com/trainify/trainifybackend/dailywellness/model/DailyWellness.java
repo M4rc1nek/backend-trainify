@@ -1,6 +1,5 @@
 package com.trainify.trainifybackend.dailywellness.model;
 
-
 import com.trainify.trainifybackend.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -30,9 +29,6 @@ public class DailyWellness {
     private int readinessScore; // Wynik oceny gotowości użytkownika w skali 0-100, wyliczany z 5 parametrów.
     private ReadinessLevel readinessLevel; // Poziom gotowości: "WYSOKI", "ŚREDNI" lub "NISKI".
     private String recommendation; // Krótka rekomendacja treningowa na podstawie wyniku.
-
-
-
 
     @ManyToOne
     @JoinColumn(name = "user_id")

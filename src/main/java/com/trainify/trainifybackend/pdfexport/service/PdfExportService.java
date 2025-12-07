@@ -6,6 +6,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -15,8 +17,7 @@ import java.util.List;
 @Service
 public class PdfExportService {
 
-    public byte[] generateTrainingsPdf(List<TrainingDTO> trainings) { // byte dlatego ze pliki PDF operuja na byte
-
+    public Resource generateTrainingsPdf(List<TrainingDTO> trainings) { // byte dlatego ze pliki PDF operuja na byte
 
         if (trainings.isEmpty()) {
             throw new RuntimeException("Brak treningów");
@@ -39,7 +40,7 @@ public class PdfExportService {
 
             for (TrainingDTO training : trainings) {
 
-                if(y < 50){
+                if (y < 50) {
                     content.close();
                     page = new PDPage();
                     document.addPage(page);
@@ -54,7 +55,7 @@ public class PdfExportService {
                 content.endText(); // Kończymy pisanie tekstu
                 y -= lineHeight; // Przesuwamy kursor w dół o wysokość jednej linii
 
-                if(y < 50){
+                if (y < 50) {
                     content.close();
                     page = new PDPage();
                     document.addPage(page);
@@ -71,7 +72,7 @@ public class PdfExportService {
 
                 // Ćwiczenia
                 for (TrainingExerciseDTO ex : training.exercises()) {
-                    if(y < 50){
+                    if (y < 50) {
                         content.close();
                         page = new PDPage();
                         document.addPage(page);
@@ -99,7 +100,7 @@ public class PdfExportService {
 
             content.beginText();
             content.setFont(fontRegular, 18);
-            content.newLineAtOffset(50,y);
+            content.newLineAtOffset(50, y);
             content.showText("( ͡° ͜ʖ ͡°)");
             content.endText();
             y -= lineHeight;
@@ -107,7 +108,7 @@ public class PdfExportService {
             content.close();
 
             document.save(byteArrayOutputStream);  //zapisujesz dokument
-            return byteArrayOutputStream.toByteArray(); // zwracasz PDF jako tablicę bajtów
+            return new ByteArrayResource(byteArrayOutputStream.toByteArray()); // zwracasz PDF jako tablicę bajtów
 
         } catch (Exception e) {
             throw new RuntimeException("Błąd przy generowaniu PDF ", e);
